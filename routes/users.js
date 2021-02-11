@@ -22,7 +22,6 @@ const { authenticateUser } = require('../middleware/auth-user');
 
 /* Return the currently authenticated user */
 router.get('/', authenticateUser, asyncHandler(async (req, res) => {
-  console.log(authenticateUser);
   const user = req.currentUser;
   res.status(200).json({
     name: `${user.lastName}, ${user.firstName}`,

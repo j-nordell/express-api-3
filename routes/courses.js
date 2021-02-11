@@ -19,10 +19,10 @@ function asyncHandler(cb){
 
 // Courses listing for all courses including the teacher
 router.get('/', asyncHandler(async (req, res) => {
-  const courses = await Course.findAll();
+  const courses = await Course.findAll({ attributes: { exclude: ['createdAt', 'updatedAt']} });
   let courseList = []
   for(let course of courses) {
-    let teacher = await course.getTeacher();
+    let teacher = await course.getTeacher({ attributes: { exclude: ['createdAt', 'updatedAt', 'password']} });
     courseList.push({course: course, teacher: teacher});
   }
   await res.status(200).json(courseList);
@@ -56,8 +56,8 @@ router.post('/', authenticateUser, asyncHandler( async (req, res) => {
 /* Course listing for a single course including the teacher*/
 router.get('/:id', asyncHandler(async (req, res) => {
   let course = await Course.findByPk(req.params.id,);
-  let teacher = await course.getTeacher();
   if(course) {
+    let teacher = await course.getTeacher({ attributes: { exclude: ['createdAt', 'updatedAt', 'password']} });
     res.status(200).json({course: course, teacher: teacher});
   } else {
     res.status(404).json({ msg: "That course was not found." });
@@ -67,21 +67,25 @@ router.get('/:id', asyncHandler(async (req, res) => {
 // Update a course if authenticated and owner
 router.put('/:id', authenticateUser, asyncHandler(async (req, res) => {
     const course = await Course.findByPk(req.params.id);
+    const user = req.currentUser;
     const errors = [];
     if(course) {
       course.title = req.body.title;
       course.description = req.body.description;
       course.estimatedTime = req.body.estimatedTime;
       course.materialsNeeded = req.body.materialsNeeded;
-
-      try {
-        await course.save();
-        res.status(204).end();
-      } catch(error) {
-        for(let err of error.errors) {
-          errors.push(err.message);
+      if(user.id == course.userId) {
+        try {
+          await course.save();
+          res.status(204).end();
+        } catch(error) {
+          for(let err of error.errors) {
+            errors.push(err.message);
+          }
+          res.status(400).json({ errors });
         }
-        res.status(400).json({ errors });
+      } else {
+        res.status(403).json({ msg: "You do not own this course!" });
       }
     } else {
       res.status(400).json({ msg: "Course not found!"});
@@ -92,13 +96,17 @@ router.put('/:id', authenticateUser, asyncHandler(async (req, res) => {
 // Delete a course if authenticated and owner
 router.delete('/:id', authenticateUser, asyncHandler(async (req, res) => {
   const course = await Course.findByPk(req.params.id);
-
-  try {
-    course.destroy();
-    res.status(204).end();
-  } catch(error) {
-    res.status(400).json(error);
-  }
+  const user = req.currentUser;
+  if(user.id == course.userId) {
+    try {
+      course.destroy();
+      res.status(204).end();
+    } catch(error) {
+      res.status(400).json(error);
+    }
+  } else {
+  res.status(403).json({ msg: "You can't delete a course you don't own!"})
+}
 }));
 
 module.exports = router;
