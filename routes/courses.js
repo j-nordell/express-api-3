@@ -6,7 +6,7 @@ const User = require('../models').User;
 const { Op } = require("sequelize");
 const { authenticateUser } = require('../middleware/auth-user');
 
-/* Handler function to wrap each route. */
+// Handler function to wrap each route. 
 function asyncHandler(cb){
   return async (req, res, next) => {
     try {
@@ -17,7 +17,7 @@ function asyncHandler(cb){
   }
 }
 
-/* Courses listing for all courses */
+// Courses listing for all courses including the teacher
 router.get('/', asyncHandler(async (req, res) => {
   const courses = await Course.findAll();
   let courseList = []
@@ -28,7 +28,7 @@ router.get('/', asyncHandler(async (req, res) => {
   await res.status(200).json(courseList);
 }));
 
-/* Create a course */
+// Create a course if authenticated
 router.post('/', authenticateUser, asyncHandler( async (req, res) => {
   let course = req.body;
   const errors = [];
@@ -43,6 +43,7 @@ router.post('/', authenticateUser, asyncHandler( async (req, res) => {
     errors.push("Please enter a description for the course.");
   }
   
+  // Display errors if available
   if(errors.length > 0) {
     res.status(400).json({ errors });
   } else {
@@ -52,20 +53,18 @@ router.post('/', authenticateUser, asyncHandler( async (req, res) => {
   }
 }));
 
-/* Course listing for a single course */
+/* Course listing for a single course including the teacher*/
 router.get('/:id', asyncHandler(async (req, res) => {
-  // course = await Course.findByPk(req.params.id, { include: [{all: true}]});
   let course = await Course.findByPk(req.params.id,);
   let teacher = await course.getTeacher();
   if(course) {
-    // let teacher = await User.findByPk(course.userId);
-    // console.log(teacher);
     res.status(200).json({course: course, teacher: teacher});
   } else {
     res.status(404).json({ msg: "That course was not found." });
   }
 }));
 
+// Update a course if authenticated and owner
 router.put('/:id', authenticateUser, asyncHandler(async (req, res) => {
     const course = await Course.findByPk(req.params.id);
     const errors = [];
@@ -90,6 +89,7 @@ router.put('/:id', authenticateUser, asyncHandler(async (req, res) => {
   }
 ));
 
+// Delete a course if authenticated and owner
 router.delete('/:id', authenticateUser, asyncHandler(async (req, res) => {
   const course = await Course.findByPk(req.params.id);
 

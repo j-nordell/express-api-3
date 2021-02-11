@@ -66,7 +66,7 @@ router.post('/', asyncHandler(async (req, res) => {
       user = await User.create(req.body);
     }
   } catch(error) {
-    errors.push("That email is already taken!");
+    errors.push(error.message);
   } 
 
   // Print errors if there are any
