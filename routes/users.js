@@ -28,10 +28,7 @@ router.get('/', authenticateUser(false), asyncHandler(async (req, res) => {
     const users = await User.findAll({attributes: { exclude: ['createdAt', 'updatedAt', 'password']}});
     res.status(200).json(users);
   } else {
-    res.status(200).json({
-      name: `${user.lastName}, ${user.firstName}`,
-      emailAddress: user.emailAddress
-    });
+    res.status(200).json({ id: user.id, firstName: user.firstName, lastName: user.lastName, emailAddress: user.emailAddress });
   };
 }));
 
