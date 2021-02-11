@@ -23,13 +23,13 @@ router.get('/', asyncHandler(async (req, res) => {
   let courseList = []
   for(let course of courses) {
     let teacher = await course.getTeacher({ attributes: { exclude: ['createdAt', 'updatedAt', 'password']} });
-    courseList.push({course: course, teacher: teacher});
+    courseList.push({course: course, user: teacher});
   }
   await res.status(200).json(courseList);
 }));
 
 // Create a course if authenticated
-router.post('/', authenticateUser, asyncHandler( async (req, res) => {
+router.post('/', authenticateUser(true), asyncHandler( async (req, res) => {
   let course = req.body;
   const errors = [];
   
@@ -55,17 +55,17 @@ router.post('/', authenticateUser, asyncHandler( async (req, res) => {
 
 /* Course listing for a single course including the teacher*/
 router.get('/:id', asyncHandler(async (req, res) => {
-  let course = await Course.findByPk(req.params.id,);
+  let course = await Course.findByPk(req.params.id, {attributes: { exclude: ['createdAt', 'updatedAt']}});
   if(course) {
     let teacher = await course.getTeacher({ attributes: { exclude: ['createdAt', 'updatedAt', 'password']} });
-    res.status(200).json({course: course, teacher: teacher});
+    res.status(200).json({course: course, user: teacher});
   } else {
     res.status(404).json({ msg: "That course was not found." });
   }
 }));
 
 // Update a course if authenticated and owner
-router.put('/:id', authenticateUser, asyncHandler(async (req, res) => {
+router.put('/:id', authenticateUser(true), asyncHandler(async (req, res) => {
     const course = await Course.findByPk(req.params.id);
     const user = req.currentUser;
     const errors = [];
@@ -94,7 +94,7 @@ router.put('/:id', authenticateUser, asyncHandler(async (req, res) => {
 ));
 
 // Delete a course if authenticated and owner
-router.delete('/:id', authenticateUser, asyncHandler(async (req, res) => {
+router.delete('/:id', authenticateUser(true), asyncHandler(async (req, res) => {
   const course = await Course.findByPk(req.params.id);
   const user = req.currentUser;
   if(user.id == course.userId) {

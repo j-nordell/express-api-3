@@ -21,12 +21,18 @@ const { authenticateUser } = require('../middleware/auth-user');
 }
 
 /* Return the currently authenticated user */
-router.get('/', authenticateUser, asyncHandler(async (req, res) => {
+router.get('/', authenticateUser(false), asyncHandler(async (req, res) => {
   const user = req.currentUser;
-  res.status(200).json({
-    name: `${user.lastName}, ${user.firstName}`,
-    emailAddress: user.emailAddress
-  });
+  
+  if(!user){
+    const users = await User.findAll({attributes: { exclude: ['createdAt', 'updatedAt', 'password']}});
+    res.status(200).json(users);
+  } else {
+    res.status(200).json({
+      name: `${user.lastName}, ${user.firstName}`,
+      emailAddress: user.emailAddress
+    });
+  };
 }));
 
 /* Create a user */

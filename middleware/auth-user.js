@@ -10,7 +10,8 @@ const bcrypt = require('bcryptjs');
  * @param {Response} res - The Express Response object.
  * @param {Function} next - The function to call to pass execution to the next middleware.
  */
-exports.authenticateUser = async (req, res, next) => {
+exports.authenticateUser = (fail) => {
+  return async (req, res, next) => {
   let message;
 
   const credentials = auth(req);
@@ -35,10 +36,12 @@ exports.authenticateUser = async (req, res, next) => {
     message = 'Auth header not found';
   }
 
-  if (message) {
-    console.warn(message);
-    res.status(401).json({ message: 'Access Denied' });
-  } else {
-    next();
-  }
+  
+    if (message && fail) {
+      console.warn(message);
+      res.status(401).json({ message: 'Access Denied' });
+    } else {
+      next();
+    }
+  };
 };
