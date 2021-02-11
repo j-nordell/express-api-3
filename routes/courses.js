@@ -66,7 +66,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
   }
 }));
 
-router.put('/:id', asyncHandler(async (req, res) => {
+router.put('/:id', authenticateUser, asyncHandler(async (req, res) => {
     const course = await Course.findByPk(req.params.id);
     const errors = [];
     if(course) {
@@ -90,7 +90,7 @@ router.put('/:id', asyncHandler(async (req, res) => {
   }
 ));
 
-router.delete('/:id', asyncHandler(async (req, res) => {
+router.delete('/:id', authenticateUser, asyncHandler(async (req, res) => {
   const course = await Course.findByPk(req.params.id);
 
   try {
