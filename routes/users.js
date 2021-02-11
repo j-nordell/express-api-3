@@ -7,7 +7,7 @@ const User = require('../models').User;
 const { Op } = require("sequelize");
 const bcrypt = require('bcryptjs');
 const users = [];
-// const { authenticateUser } = require('../middleware/auth-user');
+const { authenticateUser } = require('../middleware/auth-user');
 
  /* Handler function to wrap each route. */
  function asyncHandler(cb){
@@ -21,7 +21,8 @@ const users = [];
 }
 
 /* Return the currently authenticated user */
-router.get('/', asyncHandler(async (req, res) => {
+router.get('/', authenticateUser, asyncHandler(async (req, res) => {
+  console.log(authenticateUser);
   const user = req.currentUser;
   res.status(200).json({
     name: `${user.lastName}, ${user.firstName}`,

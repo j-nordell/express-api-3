@@ -4,7 +4,7 @@ const router = express.Router();
 const Course = require('../models').Course;
 const User = require('../models').User;
 const { Op } = require("sequelize");
-// const { authenticateUser } = require('../middleware/auth-user');
+const { authenticateUser } = require('../middleware/auth-user');
 
 /* Handler function to wrap each route. */
 function asyncHandler(cb){
@@ -29,7 +29,7 @@ router.get('/', asyncHandler(async (req, res) => {
 }));
 
 /* Create a course */
-router.post('/', asyncHandler( async (req, res) => {
+router.post('/', authenticateUser, asyncHandler( async (req, res) => {
   let course = req.body;
   const errors = [];
   
