@@ -36,8 +36,9 @@ module.exports = (sequelize) => {
     userId: {
       type: DataTypes.INTEGER,
       foreignKey: {
-        fieldName: 'id',
+        fieldName: 'userId',
         allowNull: false,
+        as: 'teacher'
       },
     },
   }, { sequelize });
@@ -45,7 +46,7 @@ module.exports = (sequelize) => {
   Course.associate = (models) => {
     Course.belongsTo(models.User, {
       as: 'teacher',
-      foreignKey: 'id',
+      foreignKey: 'userId',
       allowNull: false
     });
   };
